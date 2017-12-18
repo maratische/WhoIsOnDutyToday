@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
         peoples.add(config.persons.get(index % config.persons.size).name)
     }
 
-    Collections.shuffle(peoples);
+    shuffle(peoples);
 
     for ((index,day) in workDays.withIndex()) {
         day.name = peoples.get(index)
@@ -60,5 +60,28 @@ fun main(args: Array<String>) {
     for (day in workDays) {
         println("${day.day} - ${day.name}")
     }
+}
+
+fun shuffle(list : ArrayList<String>) : ArrayList<String> {
+    Collections.shuffle(list)
+    //check dublicates
+    var prev = "";
+    for ((index,man2) in list.withIndex()) {
+        var man = list[index]
+        if (man.equals(prev) && index < list.size - 1) {
+            //текущий равен предыдущему, меняем со следующим
+            var nextMan = index + 1
+            while (list[index].equals(list[nextMan]) && nextMan < list.size) {
+                nextMan++
+            }
+            //меняем
+            list[index] = list[nextMan]
+            list[nextMan] = man
+            prev = list[index]
+        } else {
+            prev = man
+        }
+    }
+    return list;
 }
 
