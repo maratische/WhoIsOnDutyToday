@@ -7,7 +7,9 @@ import java.io.File
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.*
+import java.util.stream.Collectors
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 open class Day (val day: LocalDate, var name: String?, var name2: String?);
 class WorkDay(day: LocalDate) : Day(day, null, null);
@@ -29,9 +31,54 @@ fun main(args: Array<String>) {
     val jsonFile: File = File(args[0])
     val config = convert(jsonFile)
     println(config)
-    //получаем коллекцию рабочих дней и выходных
+    var valueMin = 1000.0
+    var workDaysZipMin = ArrayList<Day>()
+
+    for (index in 1..10) {
+        //получаем коллекцию рабочих дней и выходных
+        val workDays = buildWorkDays(config)
+
+        //проверяем соотношения
+        //считаем балл
+        var valueWorkDay = calcValue(workDays)
+        println("valueWorkDay: ${valueWorkDay}")
+        if (valueWorkDay < valueMin) {
+            valueMin = valueWorkDay
+            workDaysZipMin = zipWorkDays(workDays)
+        }
+    }
+//    for (day in workDaysZip) {
+//        println("${day.day} - ${day.name}, ${day.name2}")
+//    }
+
+    val calendar = CreateCalendar()
+    calendar.build(workDaysZipMin)
+
+}
+
+/*
+сжимаем
+ */
+private fun zipWorkDays(workDays: ArrayList<Day>): ArrayList<Day> {
+    val workDaysZip = ArrayList<Day>()
+    var dayPrev: Day? = null
+    for (day in workDays) {
+        if (dayPrev != null && dayPrev.day.equals(day.day)) {
+            dayPrev.name2 = day.name
+        } else {
+            workDaysZip.add(day)
+            dayPrev = day
+        }
+    }
+    return workDaysZip
+}
+
+/*
+получаем коллекцию рабочих дней и выходных
+ */
+private fun buildWorkDays(config: Config): ArrayList<Day> {
     val workDays = ArrayList<Day>()
-    var firstDay = LocalDate.of(config.year, config.month,1);
+    var firstDay = LocalDate.of(config.year, config.month, 1);
     do {
         if (firstDay.dayOfWeek in listOf<DayOfWeek>(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)) {
             workDays.add(DayOffAM(firstDay))
@@ -47,39 +94,49 @@ fun main(args: Array<String>) {
     } while (firstDay.dayOfMonth != 1)
 
     val peoples = ArrayList<String>()
-    for ((index,day) in workDays.withIndex()) {
+    for ((index, day) in workDays.withIndex()) {
         peoples.add(config.persons.get(index % config.persons.size).name)
     }
 
     shuffle(peoples);
 
-    for ((index,day) in workDays.withIndex()) {
+    for ((index, day) in workDays.withIndex()) {
         day.name = peoples.get(index)
     }
+    return workDays
+}
 
-    //проверяем соотношения
-    //TODO
-
-    //сжимаем
-    val workDaysZip = ArrayList<Day>()
-    var dayPrev : Day? = null
+/*
+рассчитываем бал по результату случайного набора
+ */
+private fun calcValue(workDays: ArrayList<Day>): Double {
+    var valueWorkDay = 0.0
+    val workDaysCounter = HashMap<String, Int>()
     for (day in workDays) {
-        if (dayPrev != null && dayPrev.day.equals(day.day)) {
-            dayPrev.name2 = day.name
-        } else {
-            workDaysZip.add(day)
-            dayPrev = day
+        if (day is WorkDay) {
+            workDaysCounter.put(day.name ?: "", 1 + workDaysCounter.getOrDefault(day.name, 0))
         }
     }
-
-
-    for (day in workDaysZip) {
-        println("${day.day} - ${day.name}, ${day.name2}")
+    val weekEndDaysCounter = HashMap<String, Int>()
+    for (day in workDays) {
+        if (day is DayOffPM || day is DayOffAM) {
+            weekEndDaysCounter.put(day.name ?: "", 1 + weekEndDaysCounter.getOrDefault(day.name, 0))
+        }
     }
-
-    val calendar = CreateCalendar()
-    calendar.build(workDaysZip)
-
+    //распечатка результата
+    var averageWorkDays = workDaysCounter.values.stream().collect(Collectors.averagingInt { value -> value })
+//    println("Workdays: $averageWorkDays")
+    for (key in workDaysCounter.entries) {
+        valueWorkDay += Math.abs(averageWorkDays - key.value)
+//        println("${key.key} - ${key.value}")
+    }
+    var averageweekEndDays = weekEndDaysCounter.values.stream().collect(Collectors.averagingInt { value -> value })
+//    println("WeekEnds:")
+    for (key in weekEndDaysCounter.entries) {
+        valueWorkDay += Math.abs(averageweekEndDays - key.value)
+//        println("${key.key} - ${key.value}")
+    }
+    return valueWorkDay
 }
 
 fun shuffle(list : ArrayList<String>) : ArrayList<String> {
