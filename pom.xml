@@ -39,6 +39,18 @@
             <version>2.9.2</version>
         </dependency>
 
+        <!-- https://developers.google.com/api-client-library/java/apis/sheets/v4 -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-sheets</artifactId>
+            <version>v4-rev496-1.23.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+            <version>1.23.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

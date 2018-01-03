@@ -9,10 +9,10 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.collections.ArrayList
 
-open class Day (val day: LocalDate, var name: String?);
-class WorkDay(day: LocalDate) : Day(day, null);
-class DayOffAM(day: LocalDate) : Day(day, null);
-class DayOffPM(day: LocalDate) : Day(day, null);
+open class Day (val day: LocalDate, var name: String?, var name2: String?);
+class WorkDay(day: LocalDate) : Day(day, null, null);
+class DayOffAM(day: LocalDate) : Day(day, null, null);
+class DayOffPM(day: LocalDate) : Day(day, null, null);
 
 data class Config(val persons: List<Person>, val month: Int, val year: Int, val selebrations : List<Int>?)
 
@@ -57,9 +57,29 @@ fun main(args: Array<String>) {
         day.name = peoples.get(index)
     }
 
+    //проверяем соотношения
+    //TODO
+
+    //сжимаем
+    val workDaysZip = ArrayList<Day>()
+    var dayPrev : Day? = null
     for (day in workDays) {
-        println("${day.day} - ${day.name}")
+        if (dayPrev != null && dayPrev.day.equals(day.day)) {
+            dayPrev.name2 = day.name
+        } else {
+            workDaysZip.add(day)
+            dayPrev = day
+        }
     }
+
+
+    for (day in workDaysZip) {
+        println("${day.day} - ${day.name}, ${day.name2}")
+    }
+
+    val calendar = CreateCalendar()
+    calendar.build(workDaysZip)
+
 }
 
 fun shuffle(list : ArrayList<String>) : ArrayList<String> {
