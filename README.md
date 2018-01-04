@@ -6,6 +6,4 @@
 
 в конфигурационном файле задается месяц,год и список дежурных, задается ссылка на google drive table документ.
 
-![Calendar](raw.githubusercontent.com/maratische/WhoIsOnDutyToday/master/calendar.png)
-
-![Screenshot](calendar.png)
+![Calendar](calendar.png)
