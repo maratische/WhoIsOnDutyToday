@@ -148,7 +148,7 @@ fun shuffle(list : ArrayList<String>) : ArrayList<String> {
         if (man.equals(prev) && index < list.size - 1) {
             //текущий равен предыдущему, меняем со следующим
             var nextMan = index + 1
-            while (list[index].equals(list[nextMan]) && nextMan < list.size) {
+            while (list[index].equals(list[nextMan]) && nextMan < list.size-1) {
                 nextMan++
             }
             //меняем
