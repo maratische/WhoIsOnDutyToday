@@ -16,7 +16,7 @@ class WorkDay(day: LocalDate) : Day(day, null, null);
 class DayOffAM(day: LocalDate) : Day(day, null, null);
 class DayOffPM(day: LocalDate) : Day(day, null, null);
 
-data class Config(val persons: List<Person>, val month: Int, val year: Int, val selebrations : List<Int>?)
+data class Config(val persons: List<Person>, val month: Int, val year: Int, val selebrations : List<Int>?, val spreadsheetId : String)
 
 data class Person(val name: String, val cannot : List<Int>?, val favours : List<Int>?)
 
@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     var valueMin = 1000.0
     var workDaysZipMin = ArrayList<Day>()
 
-    for (index in 1..1000) {
+    for (index in 1..10000) {
         //получаем коллекцию рабочих дней и выходных
         val workDays = buildWorkDays(config)
 
@@ -54,7 +54,7 @@ fun main(args: Array<String>) {
 //    }
 
     val calendar = CreateCalendar()
-    calendar.build(workDaysZipMin)
+    calendar.build(workDaysZipMin, config.spreadsheetId)
 
 }
 
@@ -127,17 +127,28 @@ private fun calcValue(workDays: ArrayList<Day>): Double {
     }
     //распечатка результата
     var averageWorkDays = workDaysCounter.values.stream().collect(Collectors.averagingInt { value -> value })
-//    println("Workdays: $averageWorkDays")
     for (key in workDaysCounter.entries) {
-        valueWorkDay += Math.abs(averageWorkDays - key.value)
-//        println("${key.key} - ${key.value}")
+        valueWorkDay += Math.abs(averageWorkDays - key.value)*5
     }
     var averageweekEndDays = weekEndDaysCounter.values.stream().collect(Collectors.averagingInt { value -> value })
-//    println("WeekEnds:")
     for (key in weekEndDaysCounter.entries) {
-        valueWorkDay += Math.abs(averageweekEndDays - key.value)
-//        println("${key.key} - ${key.value}")
+        valueWorkDay += Math.abs(averageweekEndDays - key.value)*5
     }
+    //поиск повторений
+    var name = " ";
+    var name2 = " ";
+    for (day in workDays) {
+        if (name.equals(day.name ?: "")
+                || name.equals(day.name2 ?: "")
+                || name2.equals(day.name ?: "")
+                || name2.equals(day.name2 ?: "")) {
+            valueWorkDay += 1
+        }
+
+        name = day.name ?: " "
+        name2 = day.name2 ?: " "
+    }
+
     return valueWorkDay
 }
 

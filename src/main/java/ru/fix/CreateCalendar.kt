@@ -53,7 +53,7 @@ fun main(args: Array<String>) {
     day.name="marat"
     workDays.add(day)
     val calendar = CreateCalendar()
-    calendar.build(workDays)
+    calendar.build(workDays, "1aA5EyPKcUebS5FeEzqcLaQd6sZehS0PpfuBaXNdULp4")
 }
 
 class CreateCalendar {
@@ -109,7 +109,7 @@ class CreateCalendar {
     }
 
 
-    fun build(workDays : ArrayList<Day>) {
+    fun build(workDays : ArrayList<Day>, spreadsheetId: String) {
         init()
         val sheetName = "01.2018"
 
@@ -131,7 +131,6 @@ class CreateCalendar {
 
         // Prints the names and majors of students in a sample spreadsheet:
         // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        val spreadsheetId = "1aA5EyPKcUebS5FeEzqcLaQd6sZehS0PpfuBaXNdULp4"
         //проверяем есть ли нужная страница
         val spreadsheetMetadata = service.spreadsheets().get(spreadsheetId).execute()
         val sheets = spreadsheetMetadata.get("sheets") as ArrayList<Sheet>
