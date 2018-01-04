@@ -34,19 +34,21 @@ fun main(args: Array<String>) {
     var valueMin = 1000.0
     var workDaysZipMin = ArrayList<Day>()
 
-    for (index in 1..10) {
+    for (index in 1..1000) {
         //получаем коллекцию рабочих дней и выходных
         val workDays = buildWorkDays(config)
 
         //проверяем соотношения
         //считаем балл
         var valueWorkDay = calcValue(workDays)
-        println("valueWorkDay: ${valueWorkDay}")
+//        println("valueWorkDay: ${valueWorkDay}")
         if (valueWorkDay < valueMin) {
             valueMin = valueWorkDay
             workDaysZipMin = zipWorkDays(workDays)
         }
     }
+
+    println("valueMin: ${valueMin}")
 //    for (day in workDaysZip) {
 //        println("${day.day} - ${day.name}, ${day.name2}")
 //    }
