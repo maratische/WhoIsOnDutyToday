@@ -34,13 +34,13 @@ fun main(args: Array<String>) {
     var valueMin = 1000.0
     var workDaysZipMin = ArrayList<Day>()
 
-    for (index in 1..10000) {
+    for (index in 1..100000) {
         //получаем коллекцию рабочих дней и выходных
         val workDays = buildWorkDays(config)
 
         //проверяем соотношения
         //считаем балл
-        var valueWorkDay = calcValue(workDays)
+        var valueWorkDay = calcValue(workDays, config)
 //        println("valueWorkDay: ${valueWorkDay}")
         if (valueWorkDay < valueMin) {
             valueMin = valueWorkDay
@@ -111,21 +111,46 @@ private fun buildWorkDays(config: Config): ArrayList<Day> {
 /*
 рассчитываем бал по результату случайного набора
  */
-private fun calcValue(workDays: ArrayList<Day>): Double {
+private fun calcValue(workDays: ArrayList<Day>, config: Config): Double {
     var valueWorkDay = 0.0
     val workDaysCounter = HashMap<String, Int>()
+
+    //поиск запретов, когда оператор не может в этот день
+    var restrictions = HashMap<String, List<Int>>();
+    for (key in config.persons) {
+        if (key.cannot != null) {
+            restrictions.put(key.name, key.cannot);
+        }
+    }
+
+    //коллекция дней для рассчета коэффициента
     for (day in workDays) {
         if (day is WorkDay) {
+            //проверяем, что данный оператор не может в данный день
+            if (restrictions.containsKey(day.name)) {
+                var days = restrictions.get(day.name);
+                if (days!!.contains(day.day.dayOfMonth)) {
+                    return Double.MAX_VALUE;
+                }
+            }
             workDaysCounter.put(day.name ?: "", 1 + workDaysCounter.getOrDefault(day.name, 0))
         }
     }
     val weekEndDaysCounter = HashMap<String, Int>()
     for (day in workDays) {
         if (day is DayOffPM || day is DayOffAM) {
+            //проверяем, что данный оператор не может в данный день
+            if (restrictions.containsKey(day.name)) {
+                var days = restrictions.get(day.name);
+                if (days!!.contains(day.day.dayOfMonth)) {
+                    return Double.MAX_VALUE;
+                }
+            }
             weekEndDaysCounter.put(day.name ?: "", 1 + weekEndDaysCounter.getOrDefault(day.name, 0))
         }
     }
-    //распечатка результата
+
+    //считаем результат
     var averageWorkDays = workDaysCounter.values.stream().collect(Collectors.averagingInt { value -> value })
     for (key in workDaysCounter.entries) {
         valueWorkDay += Math.abs(averageWorkDays - key.value)*5
@@ -133,7 +158,16 @@ private fun calcValue(workDays: ArrayList<Day>): Double {
     var averageweekEndDays = weekEndDaysCounter.values.stream().collect(Collectors.averagingInt { value -> value })
     for (key in weekEndDaysCounter.entries) {
         valueWorkDay += Math.abs(averageweekEndDays - key.value)*5
+        //проверяем, что данный оператор не может в данный день
+        if (restrictions.containsKey(key.key)) {
+            var days = restrictions.get(key.key);
+            if (days!!.contains(key.value)) {
+                return Double.MAX_VALUE;
+//                valueWorkDay += 500;
+            }
+        }
     }
+
     //поиск повторений
     var name = " ";
     var name2 = " ";
